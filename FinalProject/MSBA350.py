@@ -11,7 +11,7 @@ import openpyxl # Keep this import for clarity, though Pandas uses it under the 
 st.set_page_config(layout="wide")
 st.title("📈 Efficient Frontier & Portfolio Optimization App")
 
-EXCEL_FILE_PATH = "all_stocks_close_prices_2019_2023.xlsx"
+EXCEL_FILE_PATH = "FinalProject/all_stocks_close_prices_2019_2023.xlsx"
 RISK_FREE_RATE = 0 # Annual risk-free rate (e.g., 2%)
 NUM_PORTFOLIOS_FRONTIER = 100 # Number of points to calculate for the frontier line
 
