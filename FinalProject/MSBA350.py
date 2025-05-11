@@ -118,7 +118,7 @@ def calculate_returns_covariance(data):
         st.warning("Not enough data points after calculating returns to perform analysis. Full data range might be too short or data is sparse.")
         return pd.DataFrame(), pd.Series(dtype=float), pd.DataFrame()
     mean_returns = daily_returns.mean() * 252
-    cov_matrix = daily_returns.cov() * 252
+    cov_matrix = daily_returns.cov() * np.sqrt(252)
     return daily_returns, mean_returns, cov_matrix
 
 def portfolio_performance(weights, mean_returns, cov_matrix):
