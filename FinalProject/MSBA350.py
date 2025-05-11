@@ -347,7 +347,7 @@ with col2:
 
     # --- MODIFICATIONS START HERE ---
     # Hardcode the profile and its display name
-    FIXED_PROFILE_KEY = "Risk Seeker"  # The key for PREDEFINED_SETS
+    FIXED_PROFILE_KEY = "Risk-Seeker Investor"  # The key for PREDEFINED_SETS
     DISPLAY_PORTFOLIO_NAME = "Selected Portfolio" # Name used in UI
 
     # Check if the hardcoded profile key exists
