@@ -343,39 +343,57 @@ with col1:
             st.write("Not enough data for correlation matrix.")
 
 with col2:
-    st.header("Part 2: Investor Profile Portfolio")
-    profile_options = list(PREDEFINED_SETS.keys())
-    selected_profile = st.selectbox("Choose an investor profile:", options=profile_options, key="p2_profile")
-    
-    # --- REMOVED: Date input for Part 2 ---
-    analysis_possible_p2 = not ALL_STOCK_DATA.empty and min_data_date_from_excel and max_data_date_from_excel and min_data_date_from_excel <= max_data_date_from_excel
+    st.header("Part 2: Selected Portfolio Analysis") # Changed header slightly for clarity
 
-    if st.button(f"Analyze {selected_profile} Portfolio", key="p2_analyze_button", disabled=not analysis_possible_p2):
-        profile_tickers = PREDEFINED_SETS[selected_profile]
-        with st.spinner(f"Analyzing {selected_profile} portfolio for full available date range..."):
-            st.session_state.p2_results = run_analysis(
-                profile_tickers,
-                min_data_date_from_excel, # Use full range
-                max_data_date_from_excel, # Use full range
-                f"{selected_profile}",
-                "p2"
-            )
-        # No need for else if profile_tickers is always valid from PREDEFINED_SETS
-        # and analysis_possible_p2 handles data loading issues.
+    # --- MODIFICATIONS START HERE ---
+    # Hardcode the profile and its display name
+    FIXED_PROFILE_KEY = "Risk Seeker"  # The key for PREDEFINED_SETS
+    DISPLAY_PORTFOLIO_NAME = "Selected Portfolio" # Name used in UI
+
+    # Check if the hardcoded profile key exists
+    if FIXED_PROFILE_KEY not in PREDEFINED_SETS:
+        st.error(f"Configuration error: The profile '{FIXED_PROFILE_KEY}' is not defined in PREDEFINED_SETS.")
+        # Optionally disable further actions if the key is critical and missing
+        profile_tickers_p2 = [] # Ensure it's an empty list to prevent errors later
+        analysis_possible_p2 = False
+    else:
+        profile_tickers_p2 = PREDEFINED_SETS[FIXED_PROFILE_KEY]
+        # Analysis possibility check (ensure ALL_STOCK_DATA and dates are valid)
+        analysis_possible_p2 = not ALL_STOCK_DATA.empty and \
+                               min_data_date_from_excel is not None and \
+                               max_data_date_from_excel is not None and \
+                               min_data_date_from_excel <= max_data_date_from_excel
+    # --- MODIFICATIONS END HERE ---
+    
+    if st.button(f"Analyze {DISPLAY_PORTFOLIO_NAME}", key="p2_analyze_button", disabled=not analysis_possible_p2): # Use DISPLAY_PORTFOLIO_NAME
+        # profile_tickers already set above based on FIXED_PROFILE_KEY
+        if not profile_tickers_p2: # Add a check in case the key was missing and it wasn't caught/disabled above
+            st.warning(f"No tickers found for '{DISPLAY_PORTFOLIO_NAME}'. Analysis cannot proceed.")
+        else:
+            with st.spinner(f"Analyzing {DISPLAY_PORTFOLIO_NAME} for full available date range..."): # Use DISPLAY_PORTFOLIO_NAME
+                st.session_state.p2_results = run_analysis(
+                    profile_tickers_p2,
+                    min_data_date_from_excel, # Use full range
+                    max_data_date_from_excel, # Use full range
+                    f"{DISPLAY_PORTFOLIO_NAME}", # Pass DISPLAY_PORTFOLIO_NAME
+                    "p2"
+                )
 
     plot_placeholder_p2 = st.empty()
     if st.session_state.p2_results:
         min_var_p2, max_sharpe_p2, max_ret_p2, frontier_p2, ind_stocks_p2, corr_p2 = st.session_state.p2_results
-        actual_tickers_p2 = list(ind_stocks_p2.index) if ind_stocks_p2 is not None and not ind_stocks_p2.empty else PREDEFINED_SETS[selected_profile]
+        
+        # Use tickers from ind_stocks_p2 if available, otherwise fallback to originally defined profile_tickers_p2
+        actual_tickers_p2 = list(ind_stocks_p2.index) if ind_stocks_p2 is not None and not ind_stocks_p2.empty else profile_tickers_p2
 
         st.markdown("---")
-        st.subheader(f"Portfolio Details ({selected_profile})")
+        st.subheader(f"Portfolio Details ({DISPLAY_PORTFOLIO_NAME})") # Use DISPLAY_PORTFOLIO_NAME
         display_portfolio_details(min_var_p2, actual_tickers_p2, "Minimum Variance Portfolio")
         display_portfolio_details(max_sharpe_p2, actual_tickers_p2, "Maximum Sharpe Ratio Portfolio")
         display_portfolio_details(max_ret_p2, actual_tickers_p2, "Maximum Return Portfolio (on Frontier)")
 
         st.markdown("---")
-        st.subheader(f"Correlation Matrix ({selected_profile})")
+        st.subheader(f"Correlation Matrix ({DISPLAY_PORTFOLIO_NAME})") # Use DISPLAY_PORTFOLIO_NAME
         if corr_p2 is not None and not corr_p2.empty:
             fig_corr_p2 = px.imshow(corr_p2, text_auto=".2f", aspect="auto", color_continuous_scale='RdBu_r', range_color=[-1,1])
             st.plotly_chart(fig_corr_p2, use_container_width=True)
